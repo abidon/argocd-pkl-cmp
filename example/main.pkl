@@ -6,13 +6,14 @@ resources: Listing<K8sResource> = new {
   new Deployment {
     metadata {
       name = "kubernetes-bootcamp"
-      namespace = "default"
+      namespace = read("env:ARGOCD_APP_NAMESPACE")
       labels {
         ["app"] = "kubernetes-bootcamp"
+        ["app.kubernetes.io/name"] = "kubernetes-bootstrap"
       }
     }
     spec {
-      replicas = 1
+      replicas = 3
       selector {
         matchLabels {
           ["app"] = "kubernetes-bootcamp"
@@ -37,6 +38,30 @@ resources: Listing<K8sResource> = new {
               }
             }
           }
+        }
+      }
+    }
+  }
+
+  new Service {
+    metadata {
+      name = "kubernetes-bootcamp"
+      namespace = read("env:ARGOCD_APP_NAMESPACE")
+      labels {
+        ["app"] = "kubernetes-bootcamp"
+        ["app.kubernetes.io/name"] = "kubernetes-bootstrap"
+      }
+    }
+    spec {
+      type = "LoadBalancer"
+      selector {
+        ["app"] = "kubernetes-bootcamp"
+      }
+      ports {
+        new {
+          protocol = "TCP"
+          port = 8000
+          targetPort = "http"
         }
       }
     }

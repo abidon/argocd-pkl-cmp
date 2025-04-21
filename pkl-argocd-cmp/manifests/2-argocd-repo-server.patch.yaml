@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argocd-repo-server
+  namespace: argocd
+spec:
+  template:
+    spec:
+      containers:
+        - name: pkl-argo-cmp
+          command: [/var/run/argocd/argocd-cmp-server]
+          image: abidon/pkl-argocd-cmp:0.1.0
+          imagePullPolicy: Always
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 999
+          volumeMounts:
+            - mountPath: /var/run/argocd
+              name: var-files
+            - mountPath: /home/argocd/cmp-server/plugins
+              name: plugins
+            - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+              subPath: plugin.yaml
+              name: pkl-argo-cmp-config
+            - mountPath: /tmp
+              name: pkl-argo-cmp-tmp
+          resources:
+            requests:
+              cpu: 250m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+      volumes:
+        - configMap:
+            name: pkl-argo-cmp-config
+          name: pkl-argo-cmp-config
+        - emptyDir: {}
+          name: pkl-argo-cmp-tmp

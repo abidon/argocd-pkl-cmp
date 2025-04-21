@@ -1,0 +1,51 @@
+import "@k8s/K8sResource.pkl"
+import "@k8s/api/apps/v1/Deployment.pkl"
+import "@k8s/api/core/v1/Service.pkl"
+
+resources: Listing<K8sResource> = new {
+  new Deployment {
+    metadata {
+      name = "kubernetes-bootcamp"
+      namespace = "default"
+      labels {
+        ["app"] = "kubernetes-bootcamp"
+      }
+    }
+    spec {
+      replicas = 1
+      selector {
+        matchLabels {
+          ["app"] = "kubernetes-bootcamp"
+        }
+      }
+      template {
+        metadata {
+          labels {
+            ["app"] = "kubernetes-bootcamp"
+          }
+        }
+        spec {
+          containers {
+            new {
+              name = "kubernetes-bootcamp"
+              image = "gcr.io/google-samples/kubernetes-bootcamp:v1"
+              ports {
+                new {
+                  containerPort = 8080
+                  name = "http"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+output {
+  value = resources
+  renderer = (K8sResource.output.renderer as YamlRenderer) {
+    isStream = true
+  }
+}
